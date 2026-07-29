@@ -7,6 +7,9 @@
   <Folder Name="/src/Services/MarketDataCollector/">
     <Project Path="src/Services/MarketDataCollector/MarketPulse.MarketDataCollector.Worker/MarketPulse.MarketDataCollector.Worker.csproj" />
   </Folder>
+  <Folder Name="/src/Services/MarketDataStorage/">
+    <Project Path="src/Services/MarketDataStorage/MarketPulse.MarketDataStorage.Worker/MarketPulse.MarketDataStorage.Worker.csproj" />
+  </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/MarketPulse.Contracts.Tests/MarketPulse.Contracts.Tests.csproj" />
   </Folder>
