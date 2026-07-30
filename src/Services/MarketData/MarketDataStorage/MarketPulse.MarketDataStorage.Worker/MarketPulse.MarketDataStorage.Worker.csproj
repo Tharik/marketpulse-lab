@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\BuildingBlocks\MarketPulse.Contracts\MarketPulse.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\..\BuildingBlocks\MarketPulse.Contracts\MarketPulse.Contracts.csproj" />
+    <ProjectReference Include="..\..\MarketDataPersistence\MarketPulse.MarketData.Persistence\MarketPulse.MarketData.Persistence.csproj" />
   </ItemGroup>
 </Project>

@@ -1,4 +1,4 @@
-namespace MarketPulse.MarketDataStorage.Worker.Models;
+namespace MarketPulse.MarketData.Persistence.Models;
 
 public sealed class MarketPriceEntity
 {

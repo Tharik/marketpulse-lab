@@ -4,11 +4,18 @@
     <Project Path="src/BuildingBlocks/MarketPulse.Contracts/MarketPulse.Contracts.csproj" />
   </Folder>
   <Folder Name="/src/Services/" />
-  <Folder Name="/src/Services/MarketDataCollector/">
-    <Project Path="src/Services/MarketDataCollector/MarketPulse.MarketDataCollector.Worker/MarketPulse.MarketDataCollector.Worker.csproj" />
+  <Folder Name="/src/Services/MarketData/" />
+  <Folder Name="/src/Services/MarketData/MarketDataCollector/">
+    <Project Path="src/Services/MarketData/MarketDataCollector/MarketPulse.MarketDataCollector.Worker/MarketPulse.MarketDataCollector.Worker.csproj" />
   </Folder>
-  <Folder Name="/src/Services/MarketDataStorage/">
-    <Project Path="src/Services/MarketDataStorage/MarketPulse.MarketDataStorage.Worker/MarketPulse.MarketDataStorage.Worker.csproj" />
+  <Folder Name="/src/Services/MarketData/MarketDataPersistence/">
+    <Project Path="src/Services/MarketData/MarketDataPersistence/MarketPulse.MarketData.Persistence/MarketPulse.MarketData.Persistence.csproj" />
+  </Folder>
+  <Folder Name="/src/Services/MarketData/MarketDataQuery/">
+    <Project Path="src/Services/MarketData/MarketDataQuery/MarketPulse.MarketDataQuery.Api/MarketPulse.MarketDataQuery.Api.csproj" />
+  </Folder>
+  <Folder Name="/src/Services/MarketData/MarketDataStorage/">
+    <Project Path="src/Services/MarketData/MarketDataStorage/MarketPulse.MarketDataStorage.Worker/MarketPulse.MarketDataStorage.Worker.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/MarketPulse.Contracts.Tests/MarketPulse.Contracts.Tests.csproj" />

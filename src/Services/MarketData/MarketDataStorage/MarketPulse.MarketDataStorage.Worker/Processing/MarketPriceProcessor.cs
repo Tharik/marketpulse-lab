@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using MarketPulse.Contracts.Events;
 using MarketPulse.Contracts.Events.MarketData;
-using MarketPulse.MarketDataStorage.Worker.Models;
-using MarketPulse.MarketDataStorage.Worker.Persistence;
+using MarketPulse.MarketData.Persistence.Models;
+using MarketPulse.MarketData.Persistence;
 
 namespace MarketPulse.MarketDataStorage.Worker.Processing;
 

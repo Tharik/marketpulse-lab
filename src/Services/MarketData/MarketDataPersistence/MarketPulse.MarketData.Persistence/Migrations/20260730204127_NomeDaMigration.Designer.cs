@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MarketPulse.MarketData.Persistence.Migrations
 {
     [DbContext(typeof(MarketDataDbContext))]
-    [Migration("20260729172732_InitialMarketDataStorage")]
-    partial class InitialMarketDataStorage
+    [Migration("20260730204127_NomeDaMigration")]
+    partial class NomeDaMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

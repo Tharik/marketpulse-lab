@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using MarketPulse.MarketDataStorage.Worker.Models;
+using MarketPulse.MarketData.Persistence.Models;
 
-namespace MarketPulse.MarketDataStorage.Worker.Persistence;
+namespace MarketPulse.MarketData.Persistence;
 
 public sealed class MarketDataDbContext : DbContext
 {

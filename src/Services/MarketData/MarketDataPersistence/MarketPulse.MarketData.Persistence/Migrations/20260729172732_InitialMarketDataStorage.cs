@@ -4,7 +4,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace MarketPulse.MarketDataStorage.Worker.Persistence.Migrations
+namespace MarketPulse.MarketData.Persistence.Migrations
 {
     /// <inheritdoc />
     public partial class InitialMarketDataStorage : Migration

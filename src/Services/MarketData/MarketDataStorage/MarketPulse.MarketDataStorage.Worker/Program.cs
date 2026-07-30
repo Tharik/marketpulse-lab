@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using MarketPulse.MarketDataStorage.Worker;
 using MarketPulse.MarketDataStorage.Worker.Configuration;
 using MarketPulse.MarketDataStorage.Worker.Consumers;
-using MarketPulse.MarketDataStorage.Worker.Persistence;
+using MarketPulse.MarketData.Persistence;
 using MarketPulse.MarketDataStorage.Worker.Processing;
 
 var builder = Host.CreateApplicationBuilder(args);

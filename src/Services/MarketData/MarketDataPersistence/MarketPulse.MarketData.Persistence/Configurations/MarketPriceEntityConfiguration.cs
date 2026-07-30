@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using MarketPulse.MarketDataStorage.Worker.Models;
+using MarketPulse.MarketData.Persistence.Models;
 
-namespace MarketPulse.MarketDataStorage.Worker.Persistence.Configurations;
+namespace MarketPulse.MarketData.Persistence.Configurations;
 
 public sealed class MarketPriceEntityConfiguration
     : IEntityTypeConfiguration<MarketPriceEntity>
