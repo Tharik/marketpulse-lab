@@ -1,5 +1,6 @@
 using MarketPulse.MarketData.Persistence;
 using MarketPulse.MarketDataQuery.Api.Responses;
+using MarketPulse.MarketDataQuery.Api.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace MarketPulse.MarketDataQuery.Api.Endpoints;
@@ -50,36 +51,16 @@ public static class MarketDataEndpoints
     }
 
     private static async Task<IResult> GetLatestPriceAsync(
-        string exchange,
-        string symbol,
-        MarketDataDbContext dbContext,
-        CancellationToken cancellationToken)
+    string exchange,
+    string symbol,
+    LatestPriceService latestPriceService,
+    CancellationToken cancellationToken)
     {
-        var requestedExchange = exchange.Trim();
-        var requestedSymbol = symbol.Trim();
-
-        var result = await dbContext.MarketPrices
-            .AsNoTracking()
-            .Where(price =>
-                EF.Functions.ILike(
-                    price.Exchange,
-                    requestedExchange) &&
-                EF.Functions.ILike(
-                    price.Symbol,
-                    requestedSymbol))
-            .OrderByDescending(
-                price => price.ExchangeTimestamp)
-            .Select(price => new MarketPriceResponse(
-                price.EventId,
-                price.Exchange,
-                price.Symbol,
-                price.Price,
-                price.QuoteCurrency,
-                price.ExchangeTimestamp,
-                price.OccurredAt,
-                price.ProducedAt,
-                price.StoredAt))
-            .FirstOrDefaultAsync(cancellationToken);
+        var result =
+            await latestPriceService.GetAsync(
+                exchange,
+                symbol,
+                cancellationToken);
 
         return result is null
             ? Results.NotFound()

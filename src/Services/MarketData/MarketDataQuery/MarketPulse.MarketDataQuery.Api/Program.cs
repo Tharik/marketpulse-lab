@@ -1,13 +1,16 @@
 using MarketPulse.MarketDataQuery.Api.Configuration;
 using MarketPulse.MarketDataQuery.Api.Endpoints;
+using MarketPulse.MarketDataQuery.Api.Services;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services
     .AddPersistence(builder.Configuration)
+    .AddRedis(builder.Configuration)
     .AddMarketDataHealthChecks()
     .AddMarketDataOpenApi();
+builder.Services.AddScoped<LatestPriceService>();
 
 var app = builder.Build();
 
