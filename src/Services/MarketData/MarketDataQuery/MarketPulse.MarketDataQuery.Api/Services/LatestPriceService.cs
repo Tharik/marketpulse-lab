@@ -1,6 +1,8 @@
+using System.Diagnostics;
 using System.Text.Json;
 using MarketPulse.MarketData.Persistence;
 using MarketPulse.MarketDataQuery.Api.Configuration;
+using MarketPulse.MarketDataQuery.Api.Observability;
 using MarketPulse.MarketDataQuery.Api.Responses;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -12,7 +14,8 @@ public sealed class LatestPriceService(
     MarketDataDbContext dbContext,
     IConnectionMultiplexer multiplexer,
     IOptions<RedisOptions> redisOptions,
-    ILogger<LatestPriceService> logger)
+    ILogger<LatestPriceService> logger,
+    MarketDataMetrics metrics)
 {
     private static readonly JsonSerializerOptions JsonOptions =
         new(JsonSerializerDefaults.Web);
@@ -21,8 +24,12 @@ public sealed class LatestPriceService(
     private readonly IDatabase _redis = multiplexer.GetDatabase();
     private readonly RedisOptions _redisOptions = redisOptions.Value;
     private readonly ILogger<LatestPriceService> _logger = logger;
+    private readonly MarketDataMetrics _metrics = metrics;
 
-    public async Task<MarketPriceResponse?> GetAsync(string exchange, string symbol, CancellationToken cancellationToken)
+    public async Task<MarketPriceResponse?> GetAsync(
+        string exchange,
+        string symbol,
+        CancellationToken cancellationToken)
     {
         var requestedExchange = exchange.Trim();
         var requestedSymbol = symbol.Trim();
@@ -36,6 +43,8 @@ public sealed class LatestPriceService(
 
         if (cacheResult.Price is not null)
         {
+            _metrics.RecordCacheHit();
+
             _logger.LogInformation(
                 "Latest price cache hit for {Exchange}/{Symbol}",
                 requestedExchange,
@@ -43,6 +52,8 @@ public sealed class LatestPriceService(
 
             return cacheResult.Price;
         }
+
+        _metrics.RecordCacheMiss();
 
         _logger.LogInformation(
             "Latest price cache miss for {Exchange}/{Symbol}",
@@ -59,7 +70,6 @@ public sealed class LatestPriceService(
             return null;
         }
 
-        // Só tenta popular o cache se o Redis estiver disponível.
         if (cacheResult.RedisAvailable)
         {
             await TrySetCacheAsync(
@@ -75,32 +85,49 @@ public sealed class LatestPriceService(
         string symbol,
         CancellationToken cancellationToken)
     {
-        return await _dbContext.MarketPrices
-            .AsNoTracking()
-            .Where(price =>
-                EF.Functions.ILike(
+        var stopwatch = Stopwatch.StartNew();
+
+        try
+        {
+            return await _dbContext.MarketPrices
+                .AsNoTracking()
+                .Where(price =>
+                    EF.Functions.ILike(
+                        price.Exchange,
+                        exchange) &&
+                    EF.Functions.ILike(
+                        price.Symbol,
+                        symbol))
+                .OrderByDescending(
+                    price => price.ExchangeTimestamp)
+                .Select(price => new MarketPriceResponse(
+                    price.EventId,
                     price.Exchange,
-                    exchange) &&
-                EF.Functions.ILike(
                     price.Symbol,
-                    symbol))
-            .OrderByDescending(
-                price => price.ExchangeTimestamp)
-            .Select(price => new MarketPriceResponse(
-                price.EventId,
-                price.Exchange,
-                price.Symbol,
-                price.Price,
-                price.QuoteCurrency,
-                price.ExchangeTimestamp,
-                price.OccurredAt,
-                price.ProducedAt,
-                price.StoredAt))
-            .FirstOrDefaultAsync(cancellationToken);
+                    price.Price,
+                    price.QuoteCurrency,
+                    price.ExchangeTimestamp,
+                    price.OccurredAt,
+                    price.ProducedAt,
+                    price.StoredAt))
+                .FirstOrDefaultAsync(cancellationToken);
+        }
+        finally
+        {
+            stopwatch.Stop();
+
+            _metrics.RecordDatabaseReadDuration(
+                stopwatch.Elapsed.TotalMilliseconds);
+        }
     }
 
-    private async Task<(MarketPriceResponse? Price, bool RedisAvailable)> TryGetFromCacheAsync(string cacheKey)
+    private async Task<(
+        MarketPriceResponse? Price,
+        bool RedisAvailable)> TryGetFromCacheAsync(
+        string cacheKey)
     {
+        var stopwatch = Stopwatch.StartNew();
+
         try
         {
             var cachedValue =
@@ -120,6 +147,8 @@ public sealed class LatestPriceService(
         }
         catch (RedisException exception)
         {
+            _metrics.RecordCacheFailure("read");
+
             _logger.LogWarning(
                 exception,
                 "Redis read failed for key {CacheKey}. Falling back to PostgreSQL.",
@@ -129,12 +158,21 @@ public sealed class LatestPriceService(
         }
         catch (JsonException exception)
         {
+            _metrics.RecordCacheFailure("deserialization");
+
             _logger.LogWarning(
                 exception,
                 "Cached value for key {CacheKey} is invalid. Falling back to PostgreSQL.",
                 cacheKey);
 
             return (null, true);
+        }
+        finally
+        {
+            stopwatch.Stop();
+
+            _metrics.RecordCacheReadDuration(
+                stopwatch.Elapsed.TotalMilliseconds);
         }
     }
 
@@ -163,9 +201,20 @@ public sealed class LatestPriceService(
         }
         catch (RedisException exception)
         {
+            _metrics.RecordCacheFailure("write");
+
             _logger.LogWarning(
                 exception,
                 "Redis write failed for key {CacheKey}. Returning PostgreSQL result.",
+                cacheKey);
+        }
+        catch (JsonException exception)
+        {
+            _metrics.RecordCacheFailure("serialization");
+
+            _logger.LogWarning(
+                exception,
+                "Could not serialize latest price for cache key {CacheKey}.",
                 cacheKey);
         }
     }
@@ -174,6 +223,9 @@ public sealed class LatestPriceService(
         string exchange,
         string symbol)
     {
-        return $"market-data:latest-price:{exchange.ToLowerInvariant()}:{symbol.ToUpperInvariant()}";
+        return
+            $"market-data:latest-price:" +
+            $"{exchange.ToLowerInvariant()}:" +
+            $"{symbol.ToUpperInvariant()}";
     }
 }

@@ -2,6 +2,8 @@ using MarketPulse.MarketData.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
+using MarketPulse.MarketDataQuery.Api.Observability;
+using OpenTelemetry.Metrics;
 
 namespace MarketPulse.MarketDataQuery.Api.Configuration;
 
@@ -99,4 +101,24 @@ public static class ServiceCollectionExtensions
 
         return services;
     }
+
+    public static IServiceCollection AddMarketDataObservability(
+    this IServiceCollection services)
+{
+    services.AddSingleton<MarketDataMetrics>();
+
+    services
+        .AddOpenTelemetry()
+        .WithMetrics(metrics =>
+        {
+            metrics.AddPrometheusExporter();
+
+            metrics.AddMeter(
+                MarketDataMetrics.MeterName,
+                "Microsoft.AspNetCore.Hosting",
+                "Microsoft.AspNetCore.Server.Kestrel");
+        });
+
+    return services;
+}
 }

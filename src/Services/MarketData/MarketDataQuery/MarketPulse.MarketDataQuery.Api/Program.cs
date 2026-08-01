@@ -9,7 +9,8 @@ builder.Services
     .AddPersistence(builder.Configuration)
     .AddRedis(builder.Configuration)
     .AddMarketDataHealthChecks()
-    .AddMarketDataOpenApi();
+    .AddMarketDataOpenApi()
+    .AddMarketDataObservability();
 builder.Services.AddScoped<LatestPriceService>();
 
 var app = builder.Build();
@@ -35,5 +36,7 @@ app.MapHealthChecks(
         Predicate = registration =>
             registration.Tags.Contains("ready")
     });
+
+app.MapPrometheusScrapingEndpoint();
 
 app.Run();
