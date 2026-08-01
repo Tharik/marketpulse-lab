@@ -92,6 +92,41 @@ services:
     networks:
       - marketpulse
 
+  redis:
+    image: redis:8.10.0-alpine
+    container_name: marketpulse-redis
+    hostname: redis
+    restart: unless-stopped
+
+    ports:
+      - "6379:6379"
+
+    command:
+      [
+        "redis-server",
+        "--appendonly",
+        "yes",
+        "--appendfsync",
+        "everysec"
+      ]
+
+    volumes:
+      - redis-data:/data
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "redis-cli ping | grep PONG"
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+
+    networks:
+      - marketpulse
+
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
     container_name: marketpulse-kafka-ui
@@ -121,3 +156,6 @@ volumes:
 
   postgres-data:
     name: marketpulse-postgres-data
+      
+  redis-data:
+    name: marketpulse-redis-data
