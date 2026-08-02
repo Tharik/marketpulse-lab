@@ -179,6 +179,30 @@ services:
     networks:
       - marketpulse
 
+  grafana:
+    image: grafana/grafana:12.2.0
+
+    container_name: marketpulse-grafana
+
+    restart: unless-stopped
+
+    ports:
+      - "3000:3000"
+
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+
+    depends_on:
+      prometheus:
+        condition: service_healthy
+
+    volumes:
+      - grafana-data:/var/lib/grafana
+
+    networks:
+      - marketpulse
+
 networks:
   marketpulse:
     name: marketpulse-network
@@ -195,3 +219,6 @@ volumes:
     
   prometheus-data:
     name: marketpulse-prometheus-data
+
+  grafana-data:
+    name: marketpulse-grafana-data
