@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - dev
+      - main
+
+  push:
+    branches:
+      - dev
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    name: Build and test
+    runs-on: ubuntu-latest
+
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Display .NET information
+        run: dotnet --info
+
+      - name: Restore dependencies
+        run: dotnet restore MarketPulse.slnx
+
+      - name: Build solution
+        run: >
+          dotnet build MarketPulse.slnx
+          --configuration Release
+          --no-restore
+          --warnaserror
+
+      - name: Run tests
+        run: >
+          dotnet test MarketPulse.slnx
+          --configuration Release
+          --no-build
+          --no-restore
+          --verbosity normal
+
+      - name: Validate Docker Compose
+        run: docker compose config --quiet
